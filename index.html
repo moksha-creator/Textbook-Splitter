@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Textbook Chapter Extractor & Splitter</title>
+    <link rel="stylesheet" href="style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <!-- Load Dependencies from CDN -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+    <script>pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';</script>
+    <script src="https://unpkg.com/pdf-lib@1.17.1/dist/pdf-lib.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/FileSaver.js/2.0.5/FileSaver.min.js"></script>
+</head>
+<body>
+    <div class="app-container">
+        <header>
+            <h1>Textbook Splitter</h1>
+            <p>Automatically extract and split chapters from your textbook PDFs.</p>
+        </header>
+
+        <main id="main-content">
+            <!-- Step 1: Upload -->
+            <section id="upload-section" class="card">
+                <div class="upload-area" id="drop-zone">
+                    <div class="upload-icon">📄</div>
+                    <h3>Upload Textbook PDF</h3>
+                    <p>Drag & drop your file here, or click to browse</p>
+                    <div style="margin: 1.5rem 0; display: flex; flex-direction: column; align-items: center; gap: 0.5rem;" onclick="event.stopPropagation()">
+                        <label for="toc-page" style="color: var(--text-secondary); font-size: 0.9rem;">Where is the Table of Contents? (Optional PDF Page or Range)</label>
+                        <input type="text" id="toc-page" placeholder="e.g. 5 or 5-7" style="width: 140px; text-align: center; font-size: 1rem; padding: 0.5rem; border-radius: 6px; background: rgba(0,0,0,0.2); color: white; border: 1px solid var(--border-color);">
+                    </div>
+                    <input type="file" id="file-input" accept="application/pdf" hidden>
+                    <button class="btn primary" onclick="document.getElementById('file-input').click()">Select PDF</button>
+                </div>
+            </section>
+
+            <!-- Processing State -->
+            <section id="processing-section" class="card hidden">
+                <div class="loader"></div>
+                <h3 id="processing-text">Analyzing PDF...</h3>
+            </section>
+
+            <!-- Step 4: Review Screen -->
+            <section id="review-section" class="card hidden">
+                <div class="section-header" style="flex-wrap: wrap; gap: 1rem;">
+                    <h2>Review Chapters</h2>
+                    <div style="display: flex; gap: 1rem; align-items: center; margin-left: auto; margin-right: 1rem;">
+                        <label for="page-offset" style="color: var(--text-secondary); font-size: 0.9rem;">Page Offset<br><small>(e.g. 10 if Page 1 is on PDF page 11)</small></label>
+                        <input type="number" id="page-offset" value="0" min="0" style="width: 70px;">
+                    </div>
+                    <button class="btn text" id="paste-toc-btn">📋 Paste TOC Text</button>
+                    <button class="btn secondary" id="add-chapter-btn">+ Add Chapter</button>
+                </div>
+                
+                <div id="paste-toc-area" class="hidden" style="margin-bottom: 1.5rem; background: rgba(0,0,0,0.2); padding: 1rem; border-radius: 8px;">
+                    <p style="margin-bottom: 0.5rem; font-size: 0.9rem; color: var(--text-secondary);">If auto-extraction failed, copy the Table of Contents text from your PDF and paste it below to auto-build the table:</p>
+                    <textarea id="paste-toc-input" rows="5" style="width: 100%; font-family: 'Inter', sans-serif; background: transparent; color: white; border: 1px solid var(--border-color); border-radius: 4px; padding: 0.5rem;" placeholder="e.g.&#10;1. Finding the Furry Cat    5&#10;2. What is Long?    10"></textarea>
+                    <div style="margin-top: 0.5rem; display: flex; justify-content: flex-end; gap: 0.5rem;">
+                        <button class="btn text" id="cancel-paste-btn">Cancel</button>
+                        <button class="btn primary" id="build-pasted-btn">Build Chapters</button>
+                    </div>
+                </div>
+
+                <div class="table-container">
+                    <table id="chapters-table">
+                        <thead>
+                            <tr>
+                                <th>Chapter Name</th>
+                                <th>Start Page</th>
+                                <th>End Page</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="chapters-tbody">
+                            <!-- Rows will be dynamically added here -->
+                        </tbody>
+                    </table>
+                </div>
+                <div class="actions-footer">
+                    <button class="btn primary" id="split-pdf-btn">Confirm & Split PDF</button>
+                </div>
+            </section>
+
+            <!-- Step 6: Download Output -->
+            <section id="export-section" class="card hidden">
+                <h2>Processing Complete!</h2>
+                <p>Your chapters have been successfully extracted and split.</p>
+                <div class="export-options">
+                    <button class="btn primary large" id="download-zip-btn">📦 Download ZIP</button>
+                    <button class="btn secondary large" id="download-json-btn">📋 Download Metadata JSON</button>
+                </div>
+                <button class="btn text" id="start-over-btn">Start Over</button>
+            </section>
+        </main>
+    </div>
+
+    <!-- Application Modules -->
+    <script src="pdfReader.js"></script>
+    <script src="tocExtractor.js"></script>
+    <script src="rangeCalculator.js"></script>
+    <script src="pdfSplitter.js"></script>
+    <script src="exportManager.js"></script>
+    <script src="app.js"></script>
+</body>
+</html>
